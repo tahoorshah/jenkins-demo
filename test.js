@@ -1,18 +1,15 @@
 const assert = require('assert');
 const http = require('http');
-const app = require('./app.js');
+const server = require('./app.js'); // This imports the server without starting it
 
 describe('Application Tests', function() {
-  let server;
-
-  // Start the server before the tests run
+  
+  // Start the server manually before tests
   before(function(done) {
-    // If app.js doesn't already call .listen, we do it here.
-    // If it does, we just need to make sure we can close it.
-    server = app.listen(3000, done);
+    server.listen(3000, done);
   });
 
-  // CLOSE the server after the tests are done
+  // Close the server manually after tests so Jenkins doesn't hang
   after(function(done) {
     server.close(done);
   });
