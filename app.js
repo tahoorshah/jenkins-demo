@@ -6,8 +6,13 @@ const server = http.createServer((req, res) => {
 });
 
 const port = process.env.PORT || 3000;
-server.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
 
+// ONLY start the server if this file is run directly
+if (require.main === module) {
+  server.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+  });
+}
+
+// Export the server object so test.js can control it
 module.exports = server;
