@@ -43,15 +43,13 @@ pipeline {
                     sh 'mkdir -p /tmp/deployment'
                     sh 'cp -r * /tmp/deployment/'
                     
-                    // Kill any old process again just to be safe
+                    // Kill any old version
                     sh "fuser -k 3000/tcp || true"
                     
-                    // Run with the background '&' and log redirection
+                    // The MAGIC LINE: Note the '>' for logs and the '&' at the very end
                     sh 'BUILD_ID=dontKillMe nohup node /tmp/deployment/app.js > /tmp/deployment/app.log 2>&1 &'
                     
-                    // Give it 2 seconds to start before Jenkins finishes
-                    sh 'sleep 2' 
-                    
+                    sh 'sleep 5' // Give it a bit more time to settle
                     echo "SUCCESS: Application is running at http://localhost:3000"
                 }
             }
