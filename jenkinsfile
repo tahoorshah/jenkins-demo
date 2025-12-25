@@ -36,7 +36,7 @@ pipeline {
             }
         }
         
-        stage('Deploy') {
+       stage('Deploy') {
             steps {
                 echo 'Deploying and Starting Application...'
                 script {
@@ -44,12 +44,12 @@ pipeline {
                     sh 'cp -r * /tmp/deployment/'
                     
                     // Kill any old version
-                    sh "fuser -k 3000/tcp || true"
+                    sh 'fuser -k 3000/tcp || true'
                     
-                    // The MAGIC LINE: Note the '>' for logs and the '&' at the very end
+                    // REDIRECT output to a log file and DETACH with &
                     sh 'BUILD_ID=dontKillMe nohup node /tmp/deployment/app.js > /tmp/deployment/app.log 2>&1 &'
                     
-                    sh 'sleep 5' // Give it a bit more time to settle
+                    sh 'sleep 5'
                     echo "SUCCESS: Application is running at http://localhost:3000"
                 }
             }
