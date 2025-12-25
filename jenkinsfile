@@ -40,17 +40,17 @@ pipeline {
             steps {
                 echo 'Deploying and Starting Application...'
                 script {
-                    // 1. Prepare the deployment directory
                     sh 'mkdir -p /tmp/deployment'
                     sh 'cp -r * /tmp/deployment/'
                     
-                    // 2. Kill any old process running on port 3000
+                    // Kill any old process again just to be safe
                     sh "fuser -k 3000/tcp || true"
                     
-                    // 3. Start the app permanently
-                    // 'BUILD_ID=dontKillMe' prevents Jenkins from killing the app after the build finishes
-                    // 'nohup' and '&' run it in the background
+                    // Run with the background '&' and log redirection
                     sh 'BUILD_ID=dontKillMe nohup node /tmp/deployment/app.js > /tmp/deployment/app.log 2>&1 &'
+                    
+                    // Give it 2 seconds to start before Jenkins finishes
+                    sh 'sleep 2' 
                     
                     echo "SUCCESS: Application is running at http://localhost:3000"
                 }
