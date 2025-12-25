@@ -7,17 +7,14 @@ pipeline {
     
     environment {
         APP_NAME = 'jenkins-demo-app'
-        BUILD_NUMBER_ENV = "${BUILD_NUMBER}"
     }
     
     stages {
         stage('Checkout') {
             steps {
                 echo 'Checking out source code...'
-                script {
-                    sh 'ls -la'
-                    sh 'pwd'
-                }
+                // Ensures we have a clean slate from Git
+                checkout scm
             }
         }
         
@@ -25,7 +22,6 @@ pipeline {
             steps {
                 echo 'Building the application...'
                 sh 'npm install'
-                sh 'echo "Build completed successfully"'
             }
         }
         
@@ -33,18 +29,17 @@ pipeline {
             steps {
                 echo 'Running tests...'
                 script {
-                    // 1. Clean up port 3000 to ensure a fresh start
+                    // Kill any zombie processes before starting
                     sh "fuser -k 3000/tcp || true"
                     
-                    // 2. Run tests only. 
-                    // Note: test.js imports app.js, so it handles starting the server.
-                    sh 'npm test'
+                    // The '-- --exit' tells Mocha to force-quit after finishing
+                    // This prevents the pipeline from hanging
+                    sh 'npm test -- --exit'
                 }
             }
             post {
                 always {
-                    echo 'Cleaning up test processes...'
-                    // Ensure the port is freed for the next build
+                    echo 'Cleaning up port 3000...'
                     sh "fuser -k 3000/tcp || true"
                 }
             }
@@ -53,25 +48,19 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Deploying application...'
-                script {
-                    sh 'mkdir -p /tmp/deployment'
-                    sh 'cp -r * /tmp/deployment/ || true'
-                    sh 'echo "Application deployed to /tmp/deployment"'
-                }
+                sh 'mkdir -p /tmp/deployment'
+                sh 'cp -r * /tmp/deployment/ || true'
+                sh 'echo "Deployment complete"'
             }
         }
     }
     
     post {
-        always {
-            echo 'Pipeline execution completed!'
-            sh 'echo "Build Number: ${BUILD_NUMBER_ENV}"'
-        }
         success {
-            echo 'Pipeline executed successfully!'
+            echo 'Build and Test successful!'
         }
         failure {
-            echo 'Pipeline execution failed!'
+            echo 'Build failed. Check the logs above for errors.'
         }
     }
 }
